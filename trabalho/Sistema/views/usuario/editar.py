@@ -80,7 +80,6 @@ def janela_editar(id_usuario, recarregar_callback):
 
     tk.Label(win, text="Senha:").pack(anchor="w", padx=10, pady=2)
     senha_entry = tk.Entry(win, show="*")
-    senha_entry.insert(0, user[4])
     senha_entry.pack(fill="x", padx=10)
 
     tk.Label(win, text="Tipo:").pack(anchor="w", padx=10, pady=2)
