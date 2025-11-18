@@ -59,19 +59,34 @@ class Usuario:
         cursor = conexao.cursor()
 
         try:
-            comando = f"""
-                UPDATE {Usuario.TABLE}
-                SET cpf=%s, nome=%s, email=%s, senha=%s, tipo=%s
-                WHERE id=%s
-            """
-            cursor.execute(comando, (self.cpf, self.nome, self.email, self.senha, self.tipo, id_usuario))
+            # Se não houver senha → update sem senha
+            if not self.senha:
+                comando = f"""
+                    UPDATE {Usuario.TABLE}
+                    SET cpf=%s, nome=%s, email=%s, tipo=%s
+                    WHERE id=%s
+                """
+                valores = (self.cpf, self.nome, self.email, self.tipo, id_usuario)
+
+            else:  # Se houver senha → update com senha
+                comando = f"""
+                    UPDATE {Usuario.TABLE}
+                    SET cpf=%s, nome=%s, email=%s, senha=%s, tipo=%s
+                    WHERE id=%s
+                """
+                valores = (self.cpf, self.nome, self.email, self.senha, self.tipo, id_usuario)
+
+            cursor.execute(comando, valores)
             conexao.commit()
             return "Usuário atualizado!"
+
         except Exception as e:
             return f"Erro ao editar: {e}"
+
         finally:
             cursor.close()
             conexao.close()
+
 
     @staticmethod
     def deletar(id_usuario):

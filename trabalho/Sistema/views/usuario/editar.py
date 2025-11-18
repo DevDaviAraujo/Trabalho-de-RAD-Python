@@ -138,7 +138,7 @@ def janela_editar(id_usuario, recarregar_callback):
         senha = senha_entry.get().strip()
         tipo = tipo_var.get()
 
-        if not all([cpf, nome, email, senha]):
+        if not all([cpf, nome, email]):
             messagebox.showwarning("Erro", "Preencha todos os campos!")
             return
 
@@ -159,12 +159,14 @@ def janela_editar(id_usuario, recarregar_callback):
             messagebox.showwarning("Erro", "Email já cadastrado.")
             return
 
+        senha_hash = hashlib.blake2b(senha.encode()).hexdigest() if senha else None
+
         # Atualiza usuário
         u = Usuario (
             cpf,
             nome.strip().title(),
             email,
-            hashlib.blake2b(senha.encode()).hexdigest(),
+            senha_hash,
             tipo
             )
         u.editar(id_usuario)
