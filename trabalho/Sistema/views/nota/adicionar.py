@@ -24,79 +24,95 @@ Matricula = carregar_class("Matricula")
 Nota = carregar_class("Nota")
 
 
-# ---------------- JANELA ---------------- #
+# ---------------- JANELA ADICIONAR NOTA ---------------- #
 
 def janela_adicionar(recarregar):
     win = tk.Toplevel()
     win.title("Adicionar Nota")
-    win.geometry("400x380")
+    win.geometry("420x420")
+    win.resizable(False, False)
 
-    def carregar_disciplinas(event=None):
-        aluno = aluno_var.get()
-        if not aluno:
-            return
+    # ---------------- CARREGAMENTO CORRETO DOS ALUNOS ---------------- #
 
-        aluno_id = aluno_map[aluno]
-        matriculas = Matricula.ler("aluno_id=%s", (aluno_id,))
+    # Agora retorna: (id_aluno, nome_usuario)
+    alunos = Aluno.dadosTabela()
 
-        disciplina_var.set("")
-        disciplina_cb["values"] = []
+    # Agora exibe só o nome do aluno
+    aluno_map = {a[1]: a[0] for a in alunos}
 
-        if not matriculas:
-            return
+    # ---------------- DISCIPLINAS ---------------- #
 
-        lista = []
-        for m in matriculas:
-            disc = Disciplina.ler("id=%s", (m[2],))[0]
-            lista.append(disc[1])  # nome
-
-        disciplina_cb["values"] = lista
-
-    # Carregar alunos
-    alunos = Aluno.ler("")
-    aluno_map = {a[0]: a[0] for a in alunos}
-    aluno_map = {f"{a[0]} - {a[1]}": a[0] for a in alunos}
-
-    # Carregar disciplinas e professores
-    disciplinas = Disciplina.ler("")
+    disciplinas = Disciplina.ler()
     disciplina_map = {d[1]: d[0] for d in disciplinas}
-    professor_map = {d[0]: d[2] for d in disciplinas}  # disciplina_id → professor_id
+    professor_map = {d[0]: d[2] for d in disciplinas}
 
-    tk.Label(win, text="Aluno:").pack()
+
+    # ---------------- INTERFACE ---------------- #
+
+    tk.Label(win, text="Aluno:").pack(pady=5)
     aluno_var = tk.StringVar()
-    aluno_cb = ttk.Combobox(win, textvariable=aluno_var, values=list(aluno_map.keys()))
-    aluno_cb.pack(fill="x")
-    aluno_cb.bind("<<ComboboxSelected>>", carregar_disciplinas)
+    aluno_cb = ttk.Combobox(win, textvariable=aluno_var, values=list(aluno_map.keys()), state="readonly")
+    aluno_cb.pack(fill="x", padx=10)
 
-    tk.Label(win, text="Disciplina:").pack()
+    tk.Label(win, text="Disciplina:").pack(pady=5)
     disciplina_var = tk.StringVar()
     disciplina_cb = ttk.Combobox(win, textvariable=disciplina_var, state="readonly")
-    disciplina_cb.pack(fill="x")
+    disciplina_cb.pack(fill="x", padx=10)
 
-    tk.Label(win, text="Nota Trabalho (0–5):").pack()
+    tk.Label(win, text="Nota Trabalho (0–5):").pack(pady=5)
     nota_trabalho_entry = tk.Entry(win)
-    nota_trabalho_entry.pack(fill="x")
+    nota_trabalho_entry.pack(fill="x", padx=10)
 
-    tk.Label(win, text="Nota Prova (0–5):").pack()
+    tk.Label(win, text="Nota Prova (0–5):").pack(pady=5)
     nota_prova_entry = tk.Entry(win)
-    nota_prova_entry.pack(fill="x")
-    
-    
-# ---------------- SALVANDO ---------------- #
+    nota_prova_entry.pack(fill="x", padx=10)
+
+
+    # ---------------- CARREGAR DISCIPLINAS BASEADAS NO ALUNO ---------------- #
+
+    def carregar_disciplinas(event=None):
+        disciplina_cb.set("")
+        disciplina_cb["values"] = []
+
+        aluno_nome = aluno_var.get()
+        if not aluno_nome:
+            return
+
+        aluno_id = aluno_map[aluno_nome]
+
+        matriculas = Matricula.ler("aluno_id=%s", (aluno_id,))
+
+        if not matriculas:
+            messagebox.showwarning("Aviso", "Este aluno não possui matrículas.")
+            return
+
+        nomes = []
+        for m in matriculas:
+            disc_id = m[2]
+            disc = Disciplina.ler("id=%s", (disc_id,))[0]
+            nomes.append(disc[1])  # Nome da disciplina
+
+        disciplina_cb["values"] = nomes
+
+
+    aluno_cb.bind("<<ComboboxSelected>>", carregar_disciplinas)
+
+
+    # ---------------- SALVAR ---------------- #
 
     def salvar():
         aluno_nome = aluno_var.get()
         disciplina_nome = disciplina_var.get()
-        nota_trab = nota_trabalho_entry.get().strip()
-        nota_prov = nota_prova_entry.get().strip()
+        trab_txt = nota_trabalho_entry.get().strip()
+        prov_txt = nota_prova_entry.get().strip()
 
-        if not aluno_nome or not disciplina_nome or not nota_trab or not nota_prov:
+        if not aluno_nome or not disciplina_nome or not trab_txt or not prov_txt:
             messagebox.showwarning("Atenção", "Preencha todos os campos")
             return
 
         try:
-            trab = float(nota_trab)
-            prov = float(nota_prov)
+            trab = float(trab_txt)
+            prov = float(prov_txt)
             if not (0 <= trab <= 5 and 0 <= prov <= 5):
                 raise ValueError
         except:
@@ -107,14 +123,24 @@ def janela_adicionar(recarregar):
         disciplina_id = disciplina_map[disciplina_nome]
         professor_id = professor_map[disciplina_id]
 
-        m = Matricula.ler(
+        matricula = Matricula.ler(
             "aluno_id=%s AND disciplina_id=%s",
             (aluno_id, disciplina_id)
-        )[0][0]
+        )
 
-        nova = Nota(disciplina_id, aluno_id, professor_id, trab, prov, m)
+        if not matricula:
+            messagebox.showerror("Erro", "Aluno não está matriculado nesta disciplina.")
+            return
+
+        matricula_id = matricula[0][0]
+
+        nova = Nota(disciplina_id, aluno_id, professor_id, trab, prov, matricula_id)
+
         messagebox.showinfo("OK", nova.criar())
         recarregar()
         win.destroy()
 
-    tk.Button(win, text="Salvar", command=salvar).pack(pady=10)
+
+    tk.Button(win, text="Salvar", command=salvar).pack(pady=20)
+
+    win.grab_set()

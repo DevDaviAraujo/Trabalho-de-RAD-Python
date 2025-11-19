@@ -40,7 +40,6 @@ Usuario = carregar_class("Usuario")
 # ---------------- IMPORTANDO AS JANELAS CRUD ---------------- #
 
 def importa_view(caminho_relativo, nome_funcao):
-    try:
         path = os.path.join(BASE_DIR, "Sistema", "views", caminho_relativo)
         if not os.path.exists(path):
              path = os.path.join("Sistema", "views", caminho_relativo)
@@ -49,10 +48,7 @@ def importa_view(caminho_relativo, nome_funcao):
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         return getattr(mod, nome_funcao)
-    except Exception as e:
-        print(f"Aviso: Não foi possível carregar a view {nome_funcao}. ({e})")
-        return lambda: messagebox.showinfo("Info", "Janela não encontrada.")
-
+    
 janela_disciplinas = importa_view("disciplinas_main.py", "janela_disciplinas")
 janela_notas = importa_view("notas_main.py", "janela_notas")
 janela_usuarios = importa_view("usuarios_main.py", "janela_usuarios")

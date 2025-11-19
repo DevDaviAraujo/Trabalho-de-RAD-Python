@@ -82,3 +82,25 @@ class Aluno:
         finally:
             cursor.close()
             conexao.close()
+            
+    @staticmethod
+    def dadosTabela(condicao="", valores=None):
+        conexao = criar_conexao()
+        cursor = conexao.cursor()
+        try:
+            comando = """
+                SELECT 
+                    a.id,        -- id aluno
+                    u.nome       -- nome do aluno
+                FROM alunos AS a
+                JOIN usuarios AS u ON a.id_usuario = u.id
+            """
+            if condicao:
+                comando += f" WHERE {condicao}"
+
+            cursor.execute(comando, valores or ())
+            return cursor.fetchall()
+        finally:
+            cursor.close()
+            conexao.close()
+            

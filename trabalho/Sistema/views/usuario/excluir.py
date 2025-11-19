@@ -44,9 +44,6 @@ def janela_excluir(id_usuario, recarregar_callback):
 # ---------------- EXCLUINDO ---------------- #
 
     def deletar():
-        resp = messagebox.askyesno("Confirmar", f"Deletar usuário '{row[2]}' (ID {row[0]})?")
-        if not resp:
-            return
         resultado = Usuario.deletar(row[0])
         messagebox.showinfo("Resultado", resultado)
         recarregar_callback()
@@ -54,7 +51,13 @@ def janela_excluir(id_usuario, recarregar_callback):
 
     btn_frame = tk.Frame(win)
     btn_frame.pack(pady=10)
-    tk.Button(btn_frame, text="Cancelar", command=win.destroy).pack(side=tk.LEFT, padx=8)
-    tk.Button(btn_frame, text="🗑️ Deletar", command=deletar).pack(side=tk.LEFT, padx=8)
+
+    tk.Button(btn_frame, text="Cancelar",
+              width=12, command=win.destroy).pack(side=tk.LEFT, padx=10)
+
+    tk.Button(btn_frame, text="🗑️ Deletar", width=12,
+              bg="#d9534f", fg="white",
+              command=deletar).pack(side=tk.LEFT, padx=10)
+
 
     win.mainloop()

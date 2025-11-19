@@ -80,6 +80,19 @@ class Nota:
         finally:
             cursor.close()
             conexao.close()
+            
+        
+    @staticmethod
+    def deletar(id):
+        conexao = criar_conexao()
+        cursor = conexao.cursor()
+        try:
+            cursor.execute(f"DELETE FROM {Nota.TABLE} WHERE id=%s", (id,))
+            conexao.commit()
+            return "Nota deletada!"
+        finally:
+            cursor.close()
+            conexao.close()
            
     
 # ---------------- MÉTODO DE LEITURA COM JOIN ---------------- #

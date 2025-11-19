@@ -15,6 +15,7 @@ def carregar_class(nome):
 Matricula = carregar_class("Matricula")
 Aluno = carregar_class("Aluno")
 Disciplina = carregar_class("Disciplina")
+Usuario = carregar_class("Usuario")   # <-- IMPORTANTE
 
 
 # ---------------- JANELA ---------------- #
@@ -22,16 +23,39 @@ Disciplina = carregar_class("Disciplina")
 def janela_adicionar(refresh):
     win = tk.Toplevel()
     win.title("Adicionar Matrícula")
-    win.geometry("350x220")
+    win.geometry("420x230")
 
+    # ---- ALUNOS ---- #
     tk.Label(win, text="Aluno:").grid(row=0, column=0, pady=5, padx=5)
-    alunos = Aluno.ler()
-    aluno_cb = ttk.Combobox(win, values=[f"{a[0]} - Usuário {a[1]}" for a in alunos], state="readonly")
+
+    alunos = Aluno.ler()              # retorna (id_aluno, id_usuario, curso)
+    lista_alunos = []
+
+    for a in alunos:
+        id_aluno = a[0]
+        id_usuario = a[1]
+
+        dados_usuario = Usuario.ler(f"id = {id_usuario}")
+
+        if dados_usuario:
+            nome_usuario = dados_usuario[0][2]  # índice 2 = nome
+            lista_alunos.append(f"{id_aluno} - {nome_usuario}")
+        else:
+            lista_alunos.append(f"{id_aluno} - [Usuário não encontrado]")
+
+    aluno_cb = ttk.Combobox(win, values=lista_alunos,
+                            state="readonly", width=35)
     aluno_cb.grid(row=0, column=1)
 
+
+    # ---- DISCIPLINAS ---- #
     tk.Label(win, text="Disciplina:").grid(row=1, column=0, pady=5, padx=5)
-    disciplinas = Disciplina.ler()
-    disc_cb = ttk.Combobox(win, values=[f"{d[0]} - {d[1]}" for d in disciplinas], state="readonly")
+
+    disciplinas = Disciplina.ler()     # retorna (id_disciplina, nome, id_professor)
+    lista_disc = [f"{d[0]} - {d[1]}" for d in disciplinas]
+
+    disc_cb = ttk.Combobox(win, values=lista_disc,
+                           state="readonly", width=35)
     disc_cb.grid(row=1, column=1)
 
 
